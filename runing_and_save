@@ -1,0 +1,67 @@
+import csv
+import random
+import eightpuzzle
+import pandas as pd
+
+# Define the heuristic function (e.g., Manhattan distance)
+def heuristic_function(state, problem):
+    return problem.getHeuristicValue(state, heuristic_type="manhattan")
+
+# Function to run A* search on a puzzle and return the results
+def run_a_star_on_puzzle(puzzle):
+    problem = EightPuzzleSearchProblem(puzzle)
+    return search.aStarSearch(problem, heuristic_function)
+
+def main():
+    # Specify the CSV filename where the initial states are stored
+    csv_filename = 'solvable_scenarios.csv'
+
+    # Read the initial states from the CSV file and create EightPuzzleState objects
+    initial_puzzles = []
+    with open(csv_filename, mode='r') as csv_file:
+        reader = csv.reader(csv_file)
+        for row in reader:
+            initial_state = list(map(int, row))
+            puzzle = EightPuzzleState(initial_state)
+            initial_puzzles.append(puzzle)
+
+    # Define heuristics to test
+    heuristics = ["misplaced", "euclidean", "manhattan", "out_of_position"]
+
+    # Create a DataFrame to store the results
+    results_df = pd.DataFrame(columns=["Heuristic", "Puzzle", "Depth", "Explored Nodes", "Max Fringe Size", "Elapsed Time", "Expanded Nodes"])
+
+    # Iterate over each puzzle and run A* search with different heuristics
+    for puzzle in initial_puzzles:
+        for heuristic_type in heuristics:
+            print(f"Running A* search for puzzle:")
+            print(puzzle)
+            print(f"Using {heuristic_type} heuristic:")
+            path, depth, explored_nodes, max_fringe_size, elapsed_time, expanded_nodes = run_a_star_on_puzzle(puzzle)
+            if path:
+                print('A* found a path of %d moves: %s' % (len(path), str(path)))
+                print('Depth:', depth)
+                print('Explored Nodes:', explored_nodes)
+                print('Max Fringe Size:', max_fringe_size)
+                print('Elapsed Time (ms):', elapsed_time)
+                print('Expanded Nodes:', expanded_nodes)
+            else:
+                print("No solution found using this heuristic.")
+            print("-------------------------------------------------")
+
+            # Add results to the DataFrame
+            results_df = results_df.append({
+                "Heuristic": heuristic_type,
+                "Puzzle": str(puzzle),
+                "Depth": depth,
+                "Explored Nodes": explored_nodes,
+                "Max Fringe Size": max_fringe_size,
+                "Elapsed Time": elapsed_time,
+                "Expanded Nodes": expanded_nodes
+            }, ignore_index=True)
+
+    # Save the results to a CSV file
+    results_df.to_csv("a_star_results.csv", index=False)
+
+if __name__ == '__main__':
+    main()
